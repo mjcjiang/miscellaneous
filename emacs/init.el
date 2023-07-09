@@ -3,9 +3,6 @@
                          ("melpa" . "http://1.15.88.122/melpa/")))
 (package-initialize)
 
-;;(setq url-proxy-services
-;;      '(("socks5" . "localhost:1080")))
-
 ;;; make sure use-package installed
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
@@ -34,22 +31,7 @@
 ;;; backup file relocate
 (setq backup-directory-alist '(("." . "~/.emacs-backups")))
 
-;;; neotree settings
-(use-package neotree
-  :ensure t
-  :config
-  (global-set-key [f8] 'neotree-toggle))
-
-;;; pyim settings
-;;(use-package pyim-basedict
-;;  :ensure t)
-;;(use-package pyim
-;;  :ensure t
-;;  :config
-;;  (pyim-basedict-enable)
-;;  (setq pyim-page-length 5)
-;;  (pyim-default-scheme 'shuangpin))
-
+;;; some util functions
 (defun check-and-install-program (program &optional install_cmd)
   "Check if PROGRAM is installed, if not, install it."
   (unless (executable-find program)
@@ -59,11 +41,43 @@
       (shell-command (format "echo jiang186212 | sudo -S apt-get install -y %s" program)))
     (message "Program %s has been installed." program)))
 
-(check-and-install-program "sbcl")
-(setq inferior-lisp-program "/usr/bin/sbcl")
+(defun create-compile-commands-json (dir-name)
+  "Create compile-commands.json file in build dir"
+  (interactive "DDirectory: ")
+  (check-and-install-program "bear")
+  (let ((default-directory (directory-file-name dir-name)))
+    (shell-command "bear -- make -j$(nproc)")))
+ 
+(defun create-tags (dir-name)
+  "Create tags file."
+  (interactive "DDirectory: ")
+  (let ((default-directory (directory-file-name dir-name)))
+    (shell-command
+     (format "ctags -f TAGS -e -R %s" (directory-file-name dir-name)))))
+
+;;; neotree settings
+(use-package neotree
+  :ensure t
+  :config
+  (global-set-key [f8] 'neotree-toggle))
+
+;;; pyim settings
+是否应验了我说的那句话，情到深处人孤独
+(use-package pyim-basedict
+  :ensure t)
+(use-package pyim
+  :ensure t
+  :config
+  (pyim-basedict-enable)
+  (setq pyim-page-length 5)
+  (pyim-default-scheme 'shuangpin))
+
+;;; setup slime for common lisp hacking
 (use-package slime
   :ensure t
   :config
+  (check-and-install-program "sbcl")
+  (setq inferior-lisp-program "/usr/bin/sbcl")
   (require 'slime-autoloads)
   (setq slime-contribs '(slime-fancy)))
 
@@ -85,14 +99,15 @@
             (setq-local company-idle-delay 0.2)
             (setq-local company-minimum-prefix-length 2))))
 
+;;; language server settings
 (use-package eglot
   :ensure t
   :config
   (check-and-install-program "ccls")
   (check-and-install-program "bear")
   (add-hook 'c++-mode-hook 'eglot-ensure)
-  (add-hook 'python-mode-hook 'eglot-ensure)
   (add-hook 'c++-mode-hook 'global-company-mode)
+  (add-hook 'python-mode-hook 'eglot-ensure)
   (add-hook 'python-mode-hook 'global-company-mode)
   (setq company-idle-delay 0.2)
   (setq company-minimum-prefix-length 2)
@@ -100,21 +115,6 @@
   (add-to-list 'eglot-server-programs '(c-mode . ("ccls")))
   (add-to-list 'eglot-server-programs '(objc-mode . ("ccls")))
   (add-to-list 'eglot-server-programs '(python-mode . ("pyls"))))
-
-(defun create-compile-commands-json (dir-name)
-  "Create compile-commands.json file in build dir"
-  (interactive "DDirectory: ")
-  (check-and-install-program "bear")
-  (let ((default-directory (directory-file-name dir-name)))
-    (shell-command "bear -- make -j$(nproc)")))
- 
-;;; generate tags file
-(defun create-tags (dir-name)
-  "Create tags file."
-  (interactive "DDirectory: ")
-  (let ((default-directory (directory-file-name dir-name)))
-    (shell-command
-     (format "ctags -f TAGS -e -R %s" (directory-file-name dir-name)))))
 
 ;;; use helm
 (use-package helm
@@ -131,6 +131,7 @@
   (projectile-mode +1)
   (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map))
 
+;;; use magit for git hacking
 (use-package magit
   :ensure t
   :bind (("C-x g" . magit-status)))
