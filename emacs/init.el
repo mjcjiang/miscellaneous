@@ -62,7 +62,7 @@
   (global-set-key [f8] 'neotree-toggle))
 
 ;;; pyim settings
-是否应验了我说的那句话，情到深处人孤独
+;;; 是否应验了我说的那句话，情到深处人孤独
 (use-package pyim-basedict
   :ensure t)
 (use-package pyim
