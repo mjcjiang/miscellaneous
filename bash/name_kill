@@ -1,0 +1,15 @@
+if [ $# -ne 1 ]; then
+  echo "Need one parameter"
+  exit 1
+fi
+
+process_ids=$(ps aux | grep $1 | grep -v grep | awk '{print $2}')
+echo ${process_ids}
+
+if [[ -n ${process_ids} ]]; then
+   echo "kill ${process_ids} with name $1"
+   echo ${process_ids} | xargs kill -9
+else
+   echo "no process need to kill"
+fi
+
