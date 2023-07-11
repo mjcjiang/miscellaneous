@@ -1,0 +1,2 @@
+* running a redis docker container: 
+docker run --name redis -e ALLOW_EMPTY_PASSWORD=yes -e REDIS_PORT_NUMBER=7000 -p 7000:7000 bitnami/redis:latest
