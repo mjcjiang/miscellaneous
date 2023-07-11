@@ -8,6 +8,9 @@
   (package-refresh-contents)
   (package-install 'use-package))
 
+;;; set-mark-command
+;;(global-key-binding (kbd "C-c s") 'set-mark-command)
+
 ;;; set indent configs
 (setq-default indent-tabs-mode nil)
 (setq-default tab-width 4)
@@ -27,6 +30,10 @@
 (setq display-line-numbers-widen t)
 (setq display-line-numbers-format "%4d")
 (global-display-line-numbers-mode)
+
+;;; auto-save settings
+(auto-save-visited-mode 1)
+(add-hook 'c++-mode-hook 'auto-save-visited-mode)
 
 ;;; backup file relocate
 (setq backup-directory-alist '(("." . "~/.emacs-backups")))
@@ -60,6 +67,12 @@
   :ensure t
   :config
   (global-set-key [f8] 'neotree-toggle))
+
+;;; zenburn
+(use-package zenburn-theme
+  :ensure t
+  :config
+  (load-theme 'zenburn t))
 
 ;;; pyim settings
 ;;; 是否应验了我说的那句话，情到深处人孤独
@@ -128,6 +141,8 @@
 (use-package projectile
   :ensure t
   :config
+  (unless (package-installed-p 'ag)
+    (package-install 'ag))
   (projectile-mode +1)
   (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map))
 
