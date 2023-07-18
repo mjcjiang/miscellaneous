@@ -1,0 +1,18 @@
+* Tasks
+** DONE Start new org file for practicing
+** DONE Outline document
+** TODO Write introduction
+
+* Intruduction
+** Obtaining org-mode
+** Installation
+** Configuration
+* The basics
+** Create a new file
+** Simple task list
+** Using headlines to structure a document
+** Links to other places
+** Adding notes to a task
+** Scheduling an appointment
+** Using the agenda
+
