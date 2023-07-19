@@ -1,0 +1,10 @@
+{
+    "server": "c22s1.jjcruises.com",
+    "server_port": 7311,
+    "local_address": "127.0.0.1",
+    "local_port": 1080,
+    "password": "JJhxjbeWNcNJK9YH",
+    "timeout": 300,
+    "method": "aes-256-gcm",
+    "fast_open": true
+}
