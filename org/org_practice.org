@@ -2,7 +2,6 @@
 ** DONE Start new org file for practicing
 ** DONE Outline document
 ** TODO Write introduction
-
 * Intruduction
 ** Obtaining org-mode
 ** Installation
@@ -15,4 +14,3 @@
 ** Adding notes to a task
 ** Scheduling an appointment
 ** Using the agenda
-
