@@ -10,6 +10,16 @@
 
 ;;; set-mark-command
 (global-set-key (kbd "C-c s") 'set-mark-command)
+(global-set-key (kbd "C-o") (lambda ()
+                                (interactive)
+                                (end-of-line)
+                                (newline)))
+(global-set-key (kbd "C-O") (lambda ()
+                                (interactive)
+                                (beginning-of-line)
+                                (newline)
+                                (previous-line)))
+
 
 ;;; set indent configs
 (setq-default indent-tabs-mode nil)
@@ -190,4 +200,4 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- )
+ ) 
