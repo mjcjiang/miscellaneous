@@ -1,0 +1,35 @@
+* xuntou interface test
+** 场景1: 获取所有合约信息
+   请求： m_client->reqInstrumentInfoByMarket("SHO", 1);
+   回调： void MarketDataXT::onReqInstrumentInfoByMarket(int nRequestId,
+                                                        const xti::CInstrumentInfo* data,
+                                                        bool isLast,
+                                                        const xti::XtError& error);
+   测试结果： 接口可用, 可以获取指定市场的所有合约信息
+** 场景2: 查询当前账户信息
+   请求：m_client->reqAccountDetail(m_strOptionAccount.c_str(), 1);
+   回调： void MarketDataXT::onReqAccountDetail(const char *accountID,
+                                               int nRequestId,
+                                               const xti::CAccountDetail *data,
+                                               bool isLast,
+                                               const xti::XtError &error);
+   测试结果： 接口可用, 可以获取账户信息
+** 场景3: 查询账持仓信息
+   请求：m_client->reqPositionDetail(m_strOptionAccount.c_str(), 1);
+   回调： void MarketDataXT::onReqPositionDetail(const char *accountID,
+                                                int nRequestId,
+                                                const xti::CPositionDetail *data,
+                                                bool isLast,
+                                                const xti::XtError &error);
+   测试结果： 接口可用, 可以获取账户持仓信息
+** 场景4: 报单
+   m_client->order(&orderInfo, genRequestId());
+   测试结果：订单可以申报，并生成订单响应和成交响应
+** 场景5: 撤单
+   m_client->cancel(data->m_nOrderID, genRequestId());
+   测试结果： 对应订单被撤销，对应订单状态显示为“已撤销”
+** 场景6: 行情订阅测试
+   m_client->subscribQuote(&subInfo1, genRequestId());
+   测试结果： 
+
+
