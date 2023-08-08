@@ -20,6 +20,60 @@
                                 (newline)
                                 (previous-line)))
 
+;;; comment and license insert
+(defun insert-license ()
+  "Inserts a BSD license comment at the beginning of the current buffer."
+  (interactive)
+  (save-excursion
+    (goto-char (point-min))
+    (insert "/*\n"
+            " * BSD 3-Clause License\n"
+            " *\n"
+            " * Redistribution and use in source and binary forms, with or without\n"
+            " * modification, are permitted provided that the following conditions are met:\n"
+            " *\n"
+            " * 1. Redistributions of source code must retain the above copyright\n"
+            " *    notice, this list of conditions and the following disclaimer.\n"
+            " *\n"
+            " * 2. Redistributions in binary form must reproduce the above copyright\n"
+            " *    notice, this list of conditions and the following disclaimer in the\n"
+            " *    documentation and/or other materials provided with the distribution.\n"
+            " *\n"
+            " * 3. Neither the name of the <organization> nor the\n"
+            " *    names of its contributors may be used to endorse or promote products\n"
+            " *    derived from this software without specific prior written permission.\n"
+            " *\n"
+            " * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS \"AS IS\"\n"
+            " * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE\n"
+            " * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE\n"
+            " * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE\n"
+            " * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR\n"
+            " * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF\n"
+            " * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS\n"
+            " * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN\n"
+            " * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)\n"
+            " * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE\n"
+            " * POSSIBILITY OF SUCH DAMAGE.\n"
+        " */\n\n")))
+
+(defun insert-comment ()
+  "Inserts a comment with author, creation date, and additional comments at the beginning of the current buffer."
+  (interactive)
+  (let ((author "Your Name")
+        (date (format-time-string "%Y-%m-%d")))
+    (save-excursion
+      (goto-char (point-min))
+        (insert "/*\n"
+              "* Author: " author "\n"
+              "* Created: " date "\n"
+              "*\n"
+              "* This is a comment describing the purpose of the code.\n"
+            "* Additional comments can be added here.\n"
+            "*/\n"))))
+
+(global-set-key (kbd "C-c i") 'insert-license)
+(global-set-key (kbd "C-c m") 'insert-comment)
+
 ;;; set window move
 (global-set-key (kbd "C-<left>")  'windmove-left)
 (global-set-key (kbd "C-<right>") 'windmove-right)
@@ -131,56 +185,56 @@
 (defvar my-clangd-exe (executable-find "clangd"))
 
 (use-package eglot
-  :ensure t
-  :config
-  (check-and-install-program "ccls")
-  (check-and-install-program "bear")
-  (add-hook 'c++-mode-hook 'eglot-ensure)
-  (add-hook 'c++-mode-hook 'global-company-mode)
-  (add-hook 'python-mode-hook 'eglot-ensure)
-  (add-hook 'python-mode-hook 'global-company-mode)
-  (setq company-idle-delay 0.2)
-  (setq company-minimum-prefix-length 2)
-  (add-to-list 'eglot-server-programs '(c++-mode . ("ccls")))
-  (add-to-list 'eglot-server-programs '(c-mode . ("ccls")))
-  (add-to-list 'eglot-server-programs '(objc-mode . ("ccls")))
-  (add-to-list 'eglot-server-programs '(python-mode . ("pyls"))))
+    :ensure t
+    :config
+    (check-and-install-program "ccls")
+    (check-and-install-program "bear")
+    (add-hook 'c++-mode-hook 'eglot-ensure)
+    (add-hook 'c++-mode-hook 'global-company-mode)
+    (add-hook 'python-mode-hook 'eglot-ensure)
+    (add-hook 'python-mode-hook 'global-company-mode)
+    (setq company-idle-delay 0.2)
+    (setq company-minimum-prefix-length 2)
+    (add-to-list 'eglot-server-programs '(c++-mode . ("ccls")))
+    (add-to-list 'eglot-server-programs '(c-mode . ("ccls")))
+    (add-to-list 'eglot-server-programs '(objc-mode . ("ccls")))
+    (add-to-list 'eglot-server-programs '(python-mode . ("pyls"))))
 
 ;;; use helm
 (use-package helm
-  :ensure t
-  :bind (("M-x" . 'helm-M-x)
-         ("C-x C-f" . 'helm-find-files)
-         ("C-x C-b" . 'helm-buffers-list)
-         ("C-c c" . 'helm-lisp-completion-at-point)))
+    :ensure t
+    :bind (("M-x" . 'helm-M-x)
+              ("C-x C-f" . 'helm-find-files)
+              ("C-x C-b" . 'helm-buffers-list)
+              ("C-c c" . 'helm-lisp-completion-at-point)))
 
 ;;; use projectile
 (use-package projectile
-  :ensure t
-  :config
-  (unless (package-installed-p 'ag)
-    (package-install 'ag))
-  (projectile-mode +1)
-  (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map))
+    :ensure t
+    :config
+    (unless (package-installed-p 'ag)
+        (package-install 'ag))
+    (projectile-mode +1)
+    (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map))
 
 ;;; use magit for git hacking
 (use-package magit
-  :ensure t
-  :bind (("C-x g" . magit-status)))
+    :ensure t
+    :bind (("C-x g" . magit-status)))
 
 ;;; org-bullets settings
 (use-package org-bullets
-  :ensure t
-  :config
-  (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
+    :ensure t
+    :config
+    (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
 
 (use-package yasnippet-snippets
-  :ensure t)
+    :ensure t)
 
 (use-package yasnippet
-  :ensure t
-  :config
-  (yas-global-mode 1))
+    :ensure t
+    :config
+    (yas-global-mode 1))
 
 ;;; setting for common lisp hacking
 (add-to-list 'auto-mode-alist '("\\.cl\\'" . lisp-mode))
@@ -188,25 +242,26 @@
 
 ;;; perspective mode for window and buffer management
 (use-package perspective
-  :bind
-  ("C-x C-p" . persp-list-buffers)         ; or use a nicer switcher, see below
-  :custom
-  (persp-mode-prefix-key (kbd "C-c M-p"))  ; pick your own prefix key here
-  :init
-  (persp-mode))
+    :bind
+    ("C-x C-p" . persp-list-buffers)         ; or use a nicer switcher, see below
+    :custom
+    (persp-mode-prefix-key (kbd "C-c M-p"))  ; pick your own prefix key here
+    :init
+    (persp-mode))
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(display-line-numbers-type 'visual)
- '(global-display-line-numbers-mode t)
- '(package-selected-packages
-      '(perspective yasnippet-snippets org-bullets lsp-mode ag eglot zenburn-theme neotree pyim-cregexp-utils pyim-basedict pyim magit use-package slime projectile origami company helm cmake-mode)))
+    '(display-line-numbers-type 'visual)
+    '(global-display-line-numbers-mode t)
+    '(package-selected-packages
+         '(perspective yasnippet-snippets org-bullets lsp-mode ag eglot zenburn-theme neotree pyim-cregexp-utils pyim-basedict pyim magit use-package slime projectile origami company helm cmake-mode)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(default ((t (:family "Monaco" :foundry "APPL" :slant normal :weight normal :height 143 :width normal)))))
+    '(default ((t (:family "Monaco" :foundry "APPL" :slant normal :weight normal :height 143 :width normal)))))
+ 
