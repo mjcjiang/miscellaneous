@@ -20,6 +20,11 @@
                                 (newline)
                                 (previous-line)))
 
+;;; set window move
+(global-set-key (kbd "C-<left>")  'windmove-left)
+(global-set-key (kbd "C-<right>") 'windmove-right)
+(global-set-key (kbd "C-<up>")    'windmove-up)
+(global-set-key (kbd "C-<down>")  'windmove-down)
 
 ;;; set indent configs
 (setq-default indent-tabs-mode nil)
@@ -122,7 +127,9 @@
             (setq-local company-idle-delay 0.2)
             (setq-local company-minimum-prefix-length 2))))
 
-;;; language server settings
+;;; language server settings'
+(defvar my-clangd-exe (executable-find "clangd"))
+
 (use-package eglot
   :ensure t
   :config
@@ -193,6 +200,8 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(display-line-numbers-type 'visual)
+ '(global-display-line-numbers-mode t)
  '(package-selected-packages
       '(perspective yasnippet-snippets org-bullets lsp-mode ag eglot zenburn-theme neotree pyim-cregexp-utils pyim-basedict pyim magit use-package slime projectile origami company helm cmake-mode)))
 (custom-set-faces
@@ -200,4 +209,4 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- ) 
+ '(default ((t (:family "Monaco" :foundry "APPL" :slant normal :weight normal :height 143 :width normal)))))
