@@ -46,7 +46,7 @@ static void child_fn(int id, struct timespec *buf, int nrecord)
 {
     int i;
     for (i = 0; i < nrecord; i++) {
-        struct timespec ts;    
+        struct timespec ts;
         load();
         clock_gettime(CLOCK_MONOTONIC, &ts);
         buf[i] = ts;
@@ -56,13 +56,13 @@ static void child_fn(int id, struct timespec *buf, int nrecord)
     }
     exit(EXIT_SUCCESS);
 }
- 
+
 static pid_t *pids;
 
 int main(int argc, char *argv[])
 {
     int ret = EXIT_FAILURE;
-    
+
     if (argc < 4) {
         fprintf(stderr, "usage: %s <nproc> <total[ms]> <resolution[ms]>\n", argv[0]);
         exit(EXIT_FAILURE);
@@ -130,6 +130,6 @@ int main(int argc, char *argv[])
         if (wait(NULL) < 0)
             warn("wait() failed.");
     
-    exit(ret);
+   exit(ret);
 }
 
