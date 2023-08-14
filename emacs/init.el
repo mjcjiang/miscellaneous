@@ -93,6 +93,19 @@
     (number-sequence tab-width (* tab-width count) tab-width)))
 (setq-default tab-stop-list (my-generate-tab-stops))
 
+;;; some simple settings
+(menu-bar-mode 0)
+(tool-bar-mode 0)
+(column-number-mode 1)
+(global-hl-line-mode 1)
+(global-visual-line-mode 1)
+(global-whitespace-mode 1)
+(setq whitespace-style
+    '(face trailing lines-tail space-before-tab space-after-tab
+         newline indentation empty)
+    whitespace-line-column 100)
+(show-paren-mode 1)
+
 ;;; line-number mode setting
 (setq display-line-numbers-type 'visual)
 (setq display-line-numbers-width 4)
