@@ -111,7 +111,7 @@
 (use-package neotree
   :ensure t
   :config
-  (global-set-key [f8] 'neotree-toggle))
+  (global-set-key (kbd "C-c n") 'neotree-toggle))
 
 ;;; zenburn
 (use-package zenburn-theme
@@ -122,13 +122,13 @@
 ;;; pyim settings
 ;;; 是否应验了我说的那句话，情到深处人孤独
 (use-package pyim-basedict
-  :ensure t)
+    :ensure t)
 (use-package pyim
-  :ensure t
-  :config
-  (pyim-basedict-enable)
-  (setq pyim-page-length 5)
-  (pyim-default-scheme 'shuangpin))
+    :ensure t
+    :config
+    (pyim-basedict-enable)
+    (setq pyim-page-length 5)
+    (pyim-default-scheme 'shuangpin))
 
 ;;; setup slime for common lisp hacking
 (use-package slime
@@ -225,29 +225,22 @@
     :init
     (persp-mode))
 
-;;; settings for org mode
-(defun org-insert-src-block (src-code-type)
-    "Insert a `SRC-CODE-TYPE' type source code block in org-mode."
-    (interactive
-        (let ((src-code-types
-                  '("emacs-lisp" "python" "C" "sh" "java" "js" "clojure" "C++" "css"
-                       "calc" "asymptote" "dot" "gnuplot" "ledger" "lilypond" "mscgen"
-                       "octave" "oz" "plantuml" "R" "sass" "screen" "sql" "awk" "ditaa"
-                       "haskell" "latex" "lisp" "matlab" "ocaml" "org" "perl" "ruby"
-                       "scheme" "sqlite")))
-            (list (ido-completing-read "Source code type: " src-code-types))))
-    (progn
-        (newline-and-indent)
-        (insert (format "#+BEGIN_SRC %s\n" src-code-type))
-        (newline-and-indent)
-        (insert "#+END_SRC\n")
-        (previous-line 2)
-        (org-edit-src-code)))
+;;; setting for rust
+(use-package rust-mode
+    :config
+    (add-hook 'rust-mode-hook
+        (lambda () (setq indent-tabs-mode nil)))
+    (setq rust-format-on-save t)
+    (add-hook 'rust-mode-hook
+        (lambda () (prettify-symbols-mode)))
+    (add-hook 'rust-mode-hook
+        'eglot-ensure))
 
-(add-hook 'org-mode-hook '(lambda ()
-                              ;; keybinding for inserting code blocks
-                              (local-set-key (kbd "C-c s i")
-                                  'org-insert-src-block)))
+(use-package tree-sitter
+  :config
+  (require 'tree-sitter-langs)
+  (global-tree-sitter-mode)
+  (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -263,4 +256,4 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
-    '(default ((t (:family "Monaco" :foundry "APPL" :slant normal :weight normal :height 143 :width normal)))))
+ '(default ((t (:family "Monaco" :foundry "unknown" :slant normal :weight normal :height 128 :width normal)))))
