@@ -46,6 +46,28 @@ int main(int argc, char *argv[])
     return 0;
 }
 #+END_SRC
+* Utinities
+** Gen Random Number
+#+BEGIN_SRC c++
+#include <random>
+
+class IntUniRdGen {
+public:
+    IntUniRdGen(int start, int end) : start(start), end(end) {
+        dis = std::uniform_int_distribution<>(start, end);
+    }
+
+    int gen_random() {
+        return dis(gen);
+    }
+  private:
+    int start = 0;
+    int end = 0;
+    std::random_device rd;
+    std::mt19937 gen{rd()};
+    std::uniform_int_distribution<> dis;
+};
+#+END_SRC
 * Multi Threading
 ** use std::lock avoid dead lock
 #+BEGIN_SRC c++
