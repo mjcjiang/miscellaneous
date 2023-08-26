@@ -68,6 +68,17 @@ public:
     std::uniform_int_distribution<> dis;
 };
 #+END_SRC
+** Benchmark a function(object) in nanoseconds
+#+BEGIN_SRC c++
+template <typename Functor>
+void log_running_time(Functor func, const std::string& name) {
+    auto start = std::chrono::high_resolution_clock::now();
+    func();
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
+    std::cout << "Running time of " << name << ": " << duration.count() << " nanoseconds" << std::endl;
+} 
+#+END_SRC
 * Multi Threading
 ** use std::lock avoid dead lock
 #+BEGIN_SRC c++
