@@ -413,5 +413,52 @@ int main(int argc, char *argv[])
     return 0;
 }
 #+END_SRC
+* intel tbb
+** flow graph example
+#+BEGIN_SRC c++
+void fig_1_10(const std::vector<ImagePtr>& image_vector) {
+    const double tint_array[] = {0.75, 0, 0};
+
+    tbb::flow::graph g;
+    int i = 0;
+
+    //construct source node
+    tbb::flow::input_node<ImagePtr> src_node(
+        g,
+        [&i, &image_vector](tbb::flow_control &fc) -> ImagePtr {
+            if (i < image_vector.size()) {
+                return image_vector[i++];
+            }
+            fc.stop();
+            return {};
+        });
+
+    //construct gamma calculation node
+    tbb::flow::function_node<ImagePtr, ImagePtr> gamma_node(g,
+                                                            tbb::flow::unlimited,
+                                                            [](ImagePtr img) -> ImagePtr {
+                                                                return applyGamma(img, 1.4);
+                                                            });
+
+    //construct tint calculation node
+    tbb::flow::function_node<ImagePtr, ImagePtr> tint_node(g,
+                                                            tbb::flow::unlimited,
+                                                            [tint_array](ImagePtr img) -> ImagePtr {
+                                                                return applyTint(img, tint_array);
+                                                            });
+
+    //construct write node
+    tbb::flow::function_node<ImagePtr> write_node(g,
+                                                  tbb::flow::unlimited,
+                                                  [] (ImagePtr image) {
+                                                      writeImage(image, "last");
+                                                  });
 
 
+    tbb::flow::make_edge(src_node, gamma_node);
+    tbb::flow::make_edge(gamma_node, tint_node);
+    tbb::flow::make_edge(tint_node, write_node);
+    src_node.activate();
+    g.wait_for_all();
+}
+#+END_SRC
