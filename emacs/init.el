@@ -20,42 +20,6 @@
                                 (newline)
                                 (previous-line)))
 
-;;; comment and license insert
-(defun insert-license ()
-  "Inserts a BSD license comment at the beginning of the current buffer."
-  (interactive)
-  (save-excursion
-    (goto-char (point-min))
-    (insert "/*\n"
-            " * BSD 3-Clause License\n"
-            " *\n"
-            " * Redistribution and use in source and binary forms, with or without\n"
-            " * modification, are permitted provided that the following conditions are met:\n"
-            " *\n"
-            " * 1. Redistributions of source code must retain the above copyright\n"
-            " *    notice, this list of conditions and the following disclaimer.\n"
-            " *\n"
-            " * 2. Redistributions in binary form must reproduce the above copyright\n"
-            " *    notice, this list of conditions and the following disclaimer in the\n"
-            " *    documentation and/or other materials provided with the distribution.\n"
-            " *\n"
-            " * 3. Neither the name of the <organization> nor the\n"
-            " *    names of its contributors may be used to endorse or promote products\n"
-            " *    derived from this software without specific prior written permission.\n"
-            " *\n"
-            " * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS \"AS IS\"\n"
-            " * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE\n"
-            " * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE\n"
-            " * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE\n"
-            " * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR\n"
-            " * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF\n"
-            " * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS\n"
-            " * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN\n"
-            " * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)\n"
-            " * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE\n"
-            " * POSSIBILITY OF SUCH DAMAGE.\n"
-        " */\n\n")))
-
 (defun insert-comment ()
   "Inserts a comment with author, creation date, and additional comments at the beginning of the current buffer."
   (interactive)
@@ -71,7 +35,6 @@
             "* Additional comments can be added here.\n"
             "*/\n"))))
 
-(global-set-key (kbd "C-c i") 'insert-license)
 (global-set-key (kbd "C-c m") 'insert-comment)
 
 ;;; set window move
@@ -148,7 +111,7 @@
 (use-package neotree
   :ensure t
   :config
-  (global-set-key [f8] 'neotree-toggle))
+  (global-set-key (kbd "C-c n") 'neotree-toggle))
 
 ;;; zenburn
 (use-package zenburn-theme
@@ -159,13 +122,13 @@
 ;;; pyim settings
 ;;; 是否应验了我说的那句话，情到深处人孤独
 (use-package pyim-basedict
-  :ensure t)
+    :ensure t)
 (use-package pyim
-  :ensure t
-  :config
-  (pyim-basedict-enable)
-  (setq pyim-page-length 5)
-  (pyim-default-scheme 'shuangpin))
+    :ensure t
+    :config
+    (pyim-basedict-enable)
+    (setq pyim-page-length 5)
+    (pyim-default-scheme 'shuangpin))
 
 ;;; setup slime for common lisp hacking
 (use-package slime
@@ -262,6 +225,23 @@
     :init
     (persp-mode))
 
+;;; setting for rust
+(use-package rust-mode
+    :config
+    (add-hook 'rust-mode-hook
+        (lambda () (setq indent-tabs-mode nil)))
+    (setq rust-format-on-save t)
+    (add-hook 'rust-mode-hook
+        (lambda () (prettify-symbols-mode)))
+    (add-hook 'rust-mode-hook
+        'eglot-ensure))
+
+(use-package tree-sitter
+  :config
+  (require 'tree-sitter-langs)
+  (global-tree-sitter-mode)
+  (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -276,5 +256,4 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
-    '(default ((t (:family "Monaco" :foundry "APPL" :slant normal :weight normal :height 143 :width normal)))))
- 
+ '(default ((t (:family "Monaco" :foundry "unknown" :slant normal :weight normal :height 128 :width normal)))))

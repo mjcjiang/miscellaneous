@@ -46,4 +46,419 @@ int main(int argc, char *argv[])
     return 0;
 }
 #+END_SRC
+* Utinities
+** Gen Random Number
+#+BEGIN_SRC c++
+#include <random>
 
+class IntUniRdGen {
+public:
+    IntUniRdGen(int start, int end) : start(start), end(end) {
+        dis = std::uniform_int_distribution<>(start, end);
+    }
+
+    int gen_random() {
+        return dis(gen);
+    }
+  private:
+    int start = 0;
+    int end = 0;
+    std::random_device rd;
+    std::mt19937 gen{rd()};
+    std::uniform_int_distribution<> dis;
+};
+#+END_SRC
+** Benchmark a function(object) in nanoseconds
+#+BEGIN_SRC c++
+template <typename Functor>
+void log_running_time(Functor func, const std::string& name) {
+    auto start = std::chrono::high_resolution_clock::now();
+    func();
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
+    std::cout << "Running time of " << name << ": " << duration.count() << " nanoseconds" << std::endl;
+} 
+#+END_SRC
+* Multi Threading
+** use std::lock avoid dead lock
+#+BEGIN_SRC c++
+#include <mutex>
+#include <thread>
+#include <iostream>
+#include <vector>
+#include <functional>
+#include <chrono>
+#include <string>
+
+struct Employee {
+    Employee(std::string id) : id(id) {}
+    std::string id;
+    std::vector<std::string> lunch_partners;
+    std::mutex m;
+    std::string output() const
+    {
+        std::string ret = "Employee " + id + " has lunch partners: ";
+        for( const auto& partner : lunch_partners )
+            ret += partner + " ";
+        return ret;
+    }
+};
+
+void send_mail(Employee &, Employee &)
+{
+    // simulate a time-consuming messaging operation
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+}
+
+void assign_lunch_partner(Employee &e1, Employee &e2)
+{
+    static std::mutex io_mutex;
+    {
+        std::lock_guard<std::mutex> lk(io_mutex);
+        std::cout << e1.id << " and " << e2.id << " are waiting for locks" << std::endl;
+    }
+
+    // use std::lock to acquire two locks without worrying about 
+    // other calls to assign_lunch_partner deadlocking us
+    {
+        std::lock(e1.m, e2.m);
+        std::lock_guard<std::mutex> lk1(e1.m, std::adopt_lock);
+        std::lock_guard<std::mutex> lk2(e2.m, std::adopt_lock);
+// Equivalent code (if unique_locks are needed, e.g. for condition variables)
+//        std::unique_lock<std::mutex> lk1(e1.m, std::defer_lock);
+//        std::unique_lock<std::mutex> lk2(e2.m, std::defer_lock);
+//        std::lock(lk1, lk2);
+// Superior solution available in C++17
+//        std::scoped_lock lk(e1.m, e2.m);
+        {
+            std::lock_guard<std::mutex> lk(io_mutex);
+            std::cout << e1.id << " and " << e2.id << " got locks" << std::endl;
+        }
+        e1.lunch_partners.push_back(e2.id);
+        e2.lunch_partners.push_back(e1.id);
+    }
+    send_mail(e1, e2);
+    send_mail(e2, e1);
+}
+
+int main()
+{
+    Employee alice("alice"), bob("bob"), christina("christina"), dave("dave");
+
+    // assign in parallel threads because mailing users about lunch assignments
+    // takes a long time
+    std::vector<std::thread> threads;
+    threads.emplace_back(assign_lunch_partner, std::ref(alice), std::ref(bob));
+    threads.emplace_back(assign_lunch_partner, std::ref(christina), std::ref(bob));
+    threads.emplace_back(assign_lunch_partner, std::ref(christina), std::ref(alice));
+    threads.emplace_back(assign_lunch_partner, std::ref(dave), std::ref(bob));
+
+    for (auto &thread : threads)
+        thread.join();
+    std::cout << alice.output() << '\n'  << bob.output() << '\n'
+              << christina.output() << '\n' << dave.output() << '\n';
+}
+#+END_SRC
+** use std::scoped_lock avoid dead lock
+#+BEGIN_SRC
+#include <chrono>
+#include <functional>
+#include <iostream>
+#include <mutex>
+#include <string>
+#include <thread>
+#include <vector>
+using namespace std::chrono_literals;
+ 
+struct Employee
+{
+    std::vector<std::string> lunch_partners;
+    std::string id;
+    std::mutex m;
+    Employee(std::string id) : id(id) {}
+    std::string partners() const
+    {
+        std::string ret = "Employee " + id + " has lunch partners: ";
+        for (const auto& partner : lunch_partners)
+            ret += partner + " ";
+        return ret;
+    }
+};
+ 
+void send_mail(Employee &, Employee &)
+{
+    // simulate a time-consuming messaging operation
+    std::this_thread::sleep_for(1s);
+}
+ 
+void assign_lunch_partner(Employee &e1, Employee &e2)
+{
+    static std::mutex io_mutex;
+    {
+        std::lock_guard<std::mutex> lk(io_mutex);
+        std::cout << e1.id << " and " << e2.id << " are waiting for locks" << std::endl;
+    }
+ 
+    {
+        // use std::scoped_lock to acquire two locks without worrying about
+        // other calls to assign_lunch_partner deadlocking us
+        // and it also provides a convenient RAII-style mechanism
+ 
+        std::scoped_lock lock(e1.m, e2.m);
+ 
+        // Equivalent code 1 (using std::lock and std::lock_guard)
+        // std::lock(e1.m, e2.m);
+        // std::lock_guard<std::mutex> lk1(e1.m, std::adopt_lock);
+        // std::lock_guard<std::mutex> lk2(e2.m, std::adopt_lock);
+ 
+        // Equivalent code 2 (if unique_locks are needed, e.g. for condition variables)
+        // std::unique_lock<std::mutex> lk1(e1.m, std::defer_lock);
+        // std::unique_lock<std::mutex> lk2(e2.m, std::defer_lock);
+        // std::lock(lk1, lk2);
+        {
+            std::lock_guard<std::mutex> lk(io_mutex);
+            std::cout << e1.id << " and " << e2.id << " got locks" << std::endl;
+        }
+        e1.lunch_partners.push_back(e2.id);
+        e2.lunch_partners.push_back(e1.id);
+    }
+ 
+    send_mail(e1, e2);
+    send_mail(e2, e1);
+}
+ 
+int main()
+{
+    Employee alice("Alice"), bob("Bob"), christina("Christina"), dave("Dave");
+ 
+    // assign in parallel threads because mailing users about lunch assignments
+    // takes a long time
+    std::vector<std::thread> threads;
+    threads.emplace_back(assign_lunch_partner, std::ref(alice), std::ref(bob));
+    threads.emplace_back(assign_lunch_partner, std::ref(christina), std::ref(bob));
+    threads.emplace_back(assign_lunch_partner, std::ref(christina), std::ref(alice));
+    threads.emplace_back(assign_lunch_partner, std::ref(dave), std::ref(bob));
+ 
+    for (auto &thread : threads)
+        thread.join();
+    std::cout << alice.partners() << '\n'  << bob.partners() << '\n'
+              << christina.partners() << '\n' << dave.partners() << '\n';
+}
+#+END_SRC
+** mutex hierachical
+   https://stackoverflow.com/questions/5340928/utilities-for-creating-a-lock-hierarchy
+#+BEGIN_SRC c++
+#include <mutex>
+#include <thread>
+#include <chrono>
+#include <climits>
+#include <iostream>
+
+class hierarch_mutex {
+public:
+    explicit hierarch_mutex(unsigned long val)
+        : hierarch_val(val), prev_hierach_val(0) {}
+
+    void lock() {
+        check_for_hierarch_violation();
+        mutex_.lock();
+        update_hierarch_value();
+    }
+
+    void unlock() {
+        this_thread_hierarch_val = prev_hierach_val;
+        mutex_.unlock();
+    }
+
+    bool try_lock() {
+        check_for_hierarch_violation();
+        if(!mutex_.try_lock())
+            return false;
+        update_hierarch_value();
+        return true;
+    }
+private:
+    void check_for_hierarch_violation() {
+        if (this_thread_hierarch_val <= hierarch_val) {
+            throw std::logic_error("mutex hierarch violated");
+        }
+    }
+
+    void update_hierarch_value() {
+        prev_hierach_val = this_thread_hierarch_val;
+        this_thread_hierarch_val = hierarch_val;
+    }
+private:
+    std::mutex mutex_;
+    unsigned long const hierarch_val;
+    unsigned long prev_hierach_val;
+    static thread_local unsigned long this_thread_hierarch_val;
+};
+
+thread_local unsigned long hierarch_mutex::this_thread_hierarch_val(ULONG_MAX);
+
+hierarch_mutex high_level_mutex(10000);
+hierarch_mutex low_level_mutex(5000);
+hierarch_mutex other_level_mutex(100);
+
+int do_low_level_staff() {
+    std::this_thread::sleep_for(std::chrono::seconds(10));
+    std::cout << "low staff finished..." << std::endl;
+    return 10;
+}
+
+int low_level_func() {
+    std::lock_guard<hierarch_mutex> lk(low_level_mutex);
+    return do_low_level_staff();
+}
+
+void do_high_level_staff(int some_param) {
+    std::this_thread::sleep_for(std::chrono::seconds(10));
+    std::cout << "high staff finished..." << std::endl;
+}
+
+void high_level_func() {
+    std::lock_guard<hierarch_mutex> lk(high_level_mutex);
+    do_high_level_staff(low_level_func());
+}
+
+void do_other_staff() {
+    std::this_thread::sleep_for(std::chrono::seconds(2));
+    std::cout << "other staff finished..." << std::endl;
+}
+
+void other_staff_func() {
+    std::lock_guard<hierarch_mutex> lk(other_level_mutex);
+    high_level_func();
+    do_other_staff();
+}
+
+void thread_a() {
+    high_level_func();
+}
+
+void thread_b() {
+    high_level_func();
+}
+
+void thread_c() {
+    other_staff_func();
+}
+
+int main(int argc, char *argv[])
+{
+    std::thread a(thread_a);
+    std::thread b(thread_b);
+    std::thread c(thread_c);
+    a.join();
+    b.join();
+    c.join();
+    return 0;
+}
+#+END_SRC
+** multi-thread, protect shared data during initilization
+#+BEGIN_SRC c++
+#include <string_view>
+#include <iostream>
+#include <mutex>
+#include <memory>
+#include <thread>
+#include <random>
+
+class SomeResource {
+};
+
+class IntUniRdGen {
+public:
+    IntUniRdGen(int start, int end) : start(start), end(end) {
+        dis = std::uniform_int_distribution<>(start, end);
+    }
+
+    int gen_random() {
+        return dis(gen);
+    }
+private:
+    int start = 0;
+    int end = 0;
+    std::random_device rd;
+    std::mt19937 gen{rd()};
+    std::uniform_int_distribution<> dis;
+};
+
+std::shared_ptr<SomeResource> resource_ptr;
+std::once_flag resource_flag;
+
+void init_resource(std::string_view name) {
+    std::cout << "------------------------------" << std::endl;
+    std::cout << "Init by: " << name << std::endl;
+    resource_ptr.reset(new SomeResource);
+    std::cout << "------------------------------" << std::endl;
+}
+
+void thread_function(std::string_view thread_name) {
+    auto sleep_time = IntUniRdGen(1, 10).gen_random();
+    std::this_thread::sleep_for(std::chrono::seconds(sleep_time));
+    std::call_once(resource_flag, init_resource, thread_name);
+    std::cout << "Do something else in: " << thread_name << std::endl;
+}
+
+int main(int argc, char *argv[])
+{
+    std::thread th1(thread_function, "thread1");
+    std::thread th2(thread_function, "thread2");
+    std::thread th3(thread_function, "thread3");
+    th1.join();
+    th2.join();
+    th3.join();
+    return 0;
+}
+#+END_SRC
+* intel tbb
+** flow graph example
+#+BEGIN_SRC c++
+void fig_1_10(const std::vector<ImagePtr>& image_vector) {
+    const double tint_array[] = {0.75, 0, 0};
+
+    tbb::flow::graph g;
+    int i = 0;
+
+    //construct source node
+    tbb::flow::input_node<ImagePtr> src_node(
+        g,
+        [&i, &image_vector](tbb::flow_control &fc) -> ImagePtr {
+            if (i < image_vector.size()) {
+                return image_vector[i++];
+            }
+            fc.stop();
+            return {};
+        });
+
+    //construct gamma calculation node
+    tbb::flow::function_node<ImagePtr, ImagePtr> gamma_node(g,
+                                                            tbb::flow::unlimited,
+                                                            [](ImagePtr img) -> ImagePtr {
+                                                                return applyGamma(img, 1.4);
+                                                            });
+
+    //construct tint calculation node
+    tbb::flow::function_node<ImagePtr, ImagePtr> tint_node(g,
+                                                            tbb::flow::unlimited,
+                                                            [tint_array](ImagePtr img) -> ImagePtr {
+                                                                return applyTint(img, tint_array);
+                                                            });
+
+    //construct write node
+    tbb::flow::function_node<ImagePtr> write_node(g,
+                                                  tbb::flow::unlimited,
+                                                  [] (ImagePtr image) {
+                                                      writeImage(image, "last");
+                                                  });
+
+
+    tbb::flow::make_edge(src_node, gamma_node);
+    tbb::flow::make_edge(gamma_node, tint_node);
+    tbb::flow::make_edge(tint_node, write_node);
+    src_node.activate();
+    g.wait_for_all();
+}
+#+END_SRC
