@@ -5,3 +5,15 @@
   docker run --name redis -e REDIS_PASSWORD=redis -e REDIS_PORT_NUMBER=5000 -p 5000:5000 bitnami/redis:latest
 
   docker run --name redis -e REDIS_PASSWORD=redis -e REDIS_PORT_NUMBER=5566 -p 5566:5566 bitnami/redis:latest
+* running a postgres docker container:
+docker run --name my-postgres-1 -e POSTGRES_USER=myuser -e POSTGRES_PASSWORD=mypassword -p 5435:5432 -d postgres
+docker run --name my-postgres-2 -e POSTGRES_USER=myuser -e POSTGRES_PASSWORD=mypassword -p 5436:5432 -d postgres
+
+psql -h localhost -p 5435 -U myuser -W
+psql -h localhost -p 5435 -U myuser -W
+
+
+docker exec -it my-postgres-1 psql -U myuser -d mypassword
+docker exec -it <container_id_or_name> psql -U <username> -W -d <database_name>
+
+

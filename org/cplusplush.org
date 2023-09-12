@@ -413,6 +413,96 @@ int main(int argc, char *argv[])
     return 0;
 }
 #+END_SRC
+** automic types and operations in c++
+*** std::atomic_flag
+code example: use atomic_flag implement a spinlock
+#+BEGIN_SRC c++
+    #include <iostream>
+    #include <string>
+    #include <atomic>
+    #include <mutex>
+    #include <thread>
+
+    class spinlock_mutex {
+      public:
+          spinlock_mutex(){}
+
+          void lock() {
+              while(flag.test_and_set(std::memory_order_acquire));
+          }
+
+          void unlock() {
+              flag.clear(std::memory_order_release);
+          }
+      private:
+          std::atomic_flag flag = ATOMIC_FLAG_INIT;
+      };
+
+      spinlock_mutex mtx;
+      int sharedVariable = 0;
+
+      void inc_shared_var() {
+          for (int i = 0; i < 10000; i++) {
+              std::lock_guard<spinlock_mutex> lock(mtx);
+              ++sharedVariable;
+          }
+      }
+
+  int main() {
+      std::thread t1(inc_shared_var);
+      std::thread t2(inc_shared_var);
+      t1.join();
+      t2.join();
+
+      std::cout << "Shared var: " << sharedVariable << std::endl;
+  }
+#+END_SRC
+*** std::atomic<bool>
+use std::atomic<bool> implement a spinlock:
+#+BEGIN_SRC c++
+#include <iostream>
+#include <atomic>
+#include <thread>
+#include <mutex>
+
+class spin_lock {
+public:
+    spin_lock() : b(false) {}
+    void lock() {
+        bool expected = false;
+        while (!b.compare_exchange_strong(expected, true)) {
+            expected = false;
+        }
+    }
+
+    void unlock() {
+        b.store(false);
+    }
+  private:
+    std::atomic<bool> b;
+};
+
+spin_lock mtx;
+int sharedVariable = 0;
+
+void inc_shared_var() {
+    for (int i = 0; i < 10000; i++) {
+        std::lock_guard<spin_lock> lock(mtx);
+        ++sharedVariable;
+    }
+}
+
+int main(int argc, char *argv[])
+{
+    std::thread t1(inc_shared_var);
+    std::thread t2(inc_shared_var);
+    t1.join();
+    t2.join();
+
+    std::cout << "Shared var: " << sharedVariable << std::endl;
+    return 0;
+}
+#+END_SRC
 * intel tbb
 ** flow graph example
 #+BEGIN_SRC c++
