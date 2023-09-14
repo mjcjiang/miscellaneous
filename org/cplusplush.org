@@ -503,6 +503,8 @@ int main(int argc, char *argv[])
     return 0;
 }
 #+END_SRC
+*** memory ordering for atomic operations
+**** seq_cst ordering
 * intel tbb
 ** flow graph example
 #+BEGIN_SRC c++

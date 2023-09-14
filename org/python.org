@@ -1,0 +1,49 @@
+* python and database
+** postgres
+*** select from postgres:
+#+BEGIN_SRC python
+import psycopg2
+from datetime import datetime
+
+# Connect to the PostgreSQL database
+conn = psycopg2.connect(
+    host="106.14.215.116",
+    database="vnpy",
+    user="zytz2609",
+    password="A88888888"
+)
+
+# Create a cursor object
+cursor = conn.cursor()
+
+# Define the start and end dates
+start_date = datetime(2022, 1, 1)
+end_date = datetime(2022, 1, 5)
+
+LOAD_ETF_OPTION_CONTRACT_QUERY = """
+SELECT * FROM etf_option_contract_data
+WHERE underlying = %(underlying)s
+AND datetime >= %(start)s
+AND datetime <= %(end)s;
+"""
+
+params = {
+    "underlying": '510300',
+    "start": start_date,
+    "end": end_date
+}
+
+# Execute the SELECT statement
+cursor.execute(LOAD_ETF_OPTION_CONTRACT_QUERY, params)
+
+# Fetch the results
+results = cursor.fetchall()
+
+# Iterate over the results
+for row in results:
+    print(row)
+
+# Close the cursor and connection
+cursor.close()
+conn.close()
+#+END_SRC
