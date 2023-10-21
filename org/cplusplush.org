@@ -503,6 +503,7 @@ int main(int argc, char *argv[])
     return 0;
 }
 #+END_SRC
+<<<<<<< HEAD
 *** use compare_and_sawp(CAS) implement a safe adder:
 #+BEGIN_SRC c++
 #include <iostream>
@@ -560,6 +561,10 @@ int main() {
     return 0;
 }
 #+END_SRC
+=======
+*** memory ordering for atomic operations
+**** seq_cst ordering
+>>>>>>> d3b652880649dfe979b0f2243d446db6d7d02433
 * intel tbb
 ** flow graph example
 #+BEGIN_SRC c++
