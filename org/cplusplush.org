@@ -503,6 +503,63 @@ int main(int argc, char *argv[])
     return 0;
 }
 #+END_SRC
+*** use compare_and_sawp(CAS) implement a safe adder:
+#+BEGIN_SRC c++
+#include <iostream>
+#include <atomic>
+#include <thread>
+
+std::atomic<int> sum;
+int safe_add(int a) {
+    int origin = sum.load();
+    while(!sum.compare_exchange_weak(origin, origin + a));
+    return sum.load();
+}
+
+void add_sum() {
+    for (int i = 1; i <= 10000; i++) {
+        safe_add(i);
+    }
+}
+
+int sum_unsafe = 0;
+int unsafe_add(int a) {
+    sum_unsafe += a;
+    return sum_unsafe;
+}
+
+void unsafe_add_sum() {
+    for (int i = 1; i <= 10000; i++) {
+        unsafe_add(i);
+    }
+}
+
+void test_safe_add() {
+    std::thread t1(add_sum);
+    std::thread t2(add_sum);
+
+    t1.join();
+    t2.join();
+
+    std::cout << "The test_safe_add result is: " << sum.load() << std::endl;
+}
+
+void test_unsafe_add() {
+    std::thread t1(unsafe_add_sum);
+    std::thread t2(unsafe_add_sum);
+
+    t1.join();
+    t2.join();
+
+    std::cout << "The test_unsafe_add result is: " << sum_unsafe << std::endl;
+}
+
+int main() {
+    test_safe_add();
+    test_unsafe_add();
+    return 0;
+}
+#+END_SRC
 * intel tbb
 ** flow graph example
 #+BEGIN_SRC c++
