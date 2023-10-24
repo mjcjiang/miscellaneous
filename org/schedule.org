@@ -9,3 +9,7 @@
 ** DONE 客户端心跳消息处理
 ** DONE 服务器端检验客户端是否离线
 ** TODO 优化消息结构定义和处理
+* plutus redis change to rabbitmq
+** TODO run a rabbitmq docker
+
+
